@@ -4,3 +4,14 @@ matplotlib
 seaborn
 scikit-learn
 jupyter
+sweetviz
+fastapi
+uvicorn
+fastapi-sqlalchemy
+fastapi-users
+fastapi-security
+fastapi-mail
+fastapi-pagination
+fastapi-plugins
+fastapi-logger 
+joblib

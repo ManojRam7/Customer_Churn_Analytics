@@ -72,7 +72,7 @@ def test_predict_batch():
                 "Support_Calls": 1,
                 "Payment_Delay": 0,
                 "Subscription_Type": "Basic",
-                "Contract_Length": "12m",
+                "Contract_Length": "Quarterly",
                 "Total_Spend": 500.0,
                 "Last_Interaction": 30
             }

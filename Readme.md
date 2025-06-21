@@ -1,14 +1,16 @@
-# Customer Churn Prediction API
+# Customer Churn Prediction Website
 
-A production-ready machine learning pipeline and FastAPI service for predicting customer churn.  
-Supports batch predictions, robust preprocessing, and is ready for deployment.
+A production-ready machine learning pipeline and FastAPI web service for predicting customer churn.  
+Supports batch and single-customer predictions via API and a user-friendly HTML web form.  
+Easily deployable with Docker and Azure Container Apps.
 
 ---
 
 ## 🚀 Features
 
 - End-to-end pipeline: data cleaning, preprocessing, model training, and inference
-- Batch and single-customer predictions via FastAPI
+- Batch and single-customer predictions via FastAPI API
+- Modern HTML front-end for manual predictions
 - Health and model info endpoints
 - Robust error handling
 - Easily deployable (Docker/Azure)
@@ -20,20 +22,23 @@ Supports batch predictions, robust preprocessing, and is ready for deployment.
 ```
 CustomerChurn_Prediction/
 │
-├── app.py                  # FastAPI app
-├── src/
-│   ├── preprocessing.py    # Preprocessing logic
-│   ├── test.py             # Local batch inference test
-│   └── train_model.py      # Model training script
+├── app.py                  # FastAPI app (API + HTML frontend)
+├── requirements.txt        # Python dependencies
+├── Dockerfile              # Docker build instructions
 ├── models/
 │   ├── preprocessor.pkl    # Saved preprocessor
-│   ├── random_forest_churn.pkl  # Trained model
+│   ├── random_forest_churn_from_script.pkl  # Trained model
 │   └── model_columns.pkl   # Model feature columns
-├── data/
+├── templates/
+│   └── index.html          # Jinja2 HTML template for the web form
+├── src/                    # (Optional) Scripts for training, preprocessing, testing
+│   ├── preprocessing.py
+│   ├── train_model.py
+│   └── test.py
+├── data/                   # (Optional) Data files
 │   └── processed/
 │       ├── eda_cleaned.csv
 │       └── preprocessed_from_script.csv
-├── requirements.txt
 └── README.md
 ```
 
@@ -50,27 +55,35 @@ CustomerChurn_Prediction/
     pip install -r requirements.txt
     ```
 
-2. **Preprocess data and train the model:**
+2. **Preprocess data and train the model (if needed):**
     ```bash
-    python -m src.preprocessing
-    python -m src.train_model
+    python src/preprocessing.py
+    python src/train_model.py
     ```
 
 3. **Run tests (optional):**
     ```bash
-    python -m src.test
+    python src/test.py
     ```
 
-4. **Start the FastAPI server:**
+4. **Start the FastAPI server (with HTML frontend):**
     ```bash
-    uvicorn app:app --reload --port 8001
+    uvicorn app:app --reload --port 8080
     ```
+    - Visit [http://localhost:8080](http://localhost:8080) for the web form.
+    - Use `/predict` endpoint for API predictions.
 
 ---
 
 ## 🛠️ Usage
 
-### **API Endpoints**
+### **A. Web Frontend**
+
+- Open [http://localhost:8080](http://localhost:8080) in your browser.
+- Fill in the form and click **Predict Churn** to see results.
+- Use the **Clear** button to reset the form.
+
+### **B. API Endpoints**
 
 #### **1. Health Check**
 ```http
@@ -93,25 +106,32 @@ GET /model_info
 #### **3. Predict Churn**
 ```http
 POST /predict
+Content-Type: application/json
 ```
 **Request Body Example:**
 ```json
 {
   "data": [
-    [2.0, 30.0, "Female", 39.0, 14.0, 5.0, 18.0, "Standard", "Annual", 932.0, 17.0],
-    [1001, 35, "Male", 12, 5, 1, 0, "Basic", "12m", 500, 30]
+    {
+      "CustomerID": 1,
+      "Age": 35,
+      "Gender": "Male",
+      "Tenure": 12,
+      "Usage_Frequency": 5,
+      "Support_Calls": 2,
+      "Payment_Delay": 0,
+      "Subscription_Type": "Standard",
+      "Contract_Length": "12m",
+      "Total_Spend": 1200.50,
+      "Last_Interaction": 5
+    }
   ]
 }
 ```
-**Order of fields:**
-```
-['CustomerID', 'Age', 'Gender', 'Tenure', 'Usage Frequency', 'Support Calls', 'Payment Delay', 'Subscription Type', 'Contract Length', 'Total Spend', 'Last Interaction']
-```
-
 **Response Example:**
 ```json
 {
-  "predictions": [1.0, 0.0]
+  "predictions": [0]
 }
 ```
 
@@ -128,19 +148,51 @@ POST /reload_model
 
 ## 📝 Notes
 
-- Ensure your input data matches the expected column order and types.
-- For batch predictions, send multiple rows in the `"data"` array.
+- Ensure your input data matches the expected column names and types.
+- For batch predictions, send multiple objects in the `"data"` array.
 - Update model and preprocessor files together after retraining.
+- The HTML form retains values after prediction and features a clear button and watermark.
 
 ---
 
-## ☁️ Deployment
+## 🐳 Dockerization
 
-- Ready for Docker and Azure App Service/Container Apps.
-- See [FastAPI deployment docs](https://fastapi.tiangolo.com/deployment/) and [Azure Python quickstart](https://learn.microsoft.com/en-us/azure/app-service/quickstart-python).
+1. **Build the Docker image for amd64 (required for Azure):**
+    ```bash
+    docker build --platform linux/amd64 -t manojram7/customer-churn-api:latest .
+    ```
+
+2. **Run locally:**
+    ```bash
+    docker run -p 8080:8080 manojram7/customer-churn-api:latest
+    ```
+
+3. **Push to Docker Hub:**
+    ```bash
+    docker push manojram7/customer-churn-api:latest
+    ```
+
+---
+
+## ☁️ Azure Container App Deployment
+
+1. **Create a Container App in Azure Portal:**
+    - **Image source:** Docker Hub
+    - **Registry login server:** `docker.io`
+    - **Image and tag:** `manojram7/customer-churn-api:latest`
+    - **Target port:** `8080`
+    - **Ingress:** Enabled (public access if needed)
+
+2. **After deployment, access your app at the provided Azure URL.**
+
+3. **Test the `/` (web form) and `/predict` (API) endpoints.**
 
 ---
 
 ## 📧 Support
 
-For questions or issues, open an issue or contact the
+For questions or issues, open an issue or contact the maintainer.
+
+---
+
+**Happy Predicting!**

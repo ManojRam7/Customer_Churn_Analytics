@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Churn Prediction</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 50%, #fffcb0 100%);
+            position: relative;
+        }
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            font-size: 10vw;
+            color:rgb(248, 4, 4);
+            opacity: 0.25;
+            font-weight: bold;
+            pointer-events: none;
+            user-select: none;
+            z-index: 0;
+            white-space: nowrap;
+        }
+        .container {
+            max-width: 420px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 36px 32px 28px 32px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(60,60,120,0.12);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        h2 {
+            margin-bottom: 24px;
+            color: #2d3a4b;
+            letter-spacing: 1px;
+        }
+        form {
+            width: 100%;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #3b4252;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            margin-bottom: 18px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            background: #f8fafc;
+            transition: border 0.2s;
+        }
+        input:focus, select:focus {
+            border: 1.5px solid #6366f1;
+            outline: none;
+            background: #fff;
+        }
+        .button-row {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            flex: 1;
+            padding: 12px 0;
+            background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
+            transform: translateY(-2px) scale(1.02);
+        }
+        .result {
+            margin-top: 28px;
+            padding: 16px;
+            background: #f1f5f9;
+            border-left: 5px solid #6366f1;
+            border-radius: 6px;
+            font-size: 1.15rem;
+            color: #22223b;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.06);
+        }
+        @media (max-width: 600px) {
+            .container {
+                max-width: 98vw;
+                padding: 18px 6vw 18px 6vw;
+            }
+            .watermark {
+                font-size: 12vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="watermark">TELECOM SERVICES</div>
+    <div class="container">
+        <h2>Customer Churn Prediction</h2>
+        <form method="post" id="churnForm" autocomplete="off">
+            <label>CustomerID:</label>
+            <input type="number" name="CustomerID" required value="{{ form_data.get('CustomerID', '') }}">
+            <label>Age:</label>
+            <input type="number" name="Age" required value="{{ form_data.get('Age', '') }}">
+            <label>Gender:</label>
+            <select name="Gender">
+                <option value="Male" {% if form_data.get('Gender', '') == 'Male' %}selected{% endif %}>Male</option>
+                <option value="Female" {% if form_data.get('Gender', '') == 'Female' %}selected{% endif %}>Female</option>
+            </select>
+            <label>Tenure:</label>
+            <input type="number" name="Tenure" required value="{{ form_data.get('Tenure', '') }}">
+            <label>Usage Frequency:</label>
+            <input type="number" name="Usage_Frequency" required value="{{ form_data.get('Usage_Frequency', '') }}">
+            <label>Support Calls:</label>
+            <input type="number" name="Support_Calls" required value="{{ form_data.get('Support_Calls', '') }}">
+            <label>Payment Delay:</label>
+            <input type="number" name="Payment_Delay" required value="{{ form_data.get('Payment_Delay', '') }}">
+            <label>Subscription Type:</label>
+            <select name="Subscription_Type">
+                <option value="Basic" {% if form_data.get('Subscription_Type', '') == 'Basic' %}selected{% endif %}>Basic</option>
+                <option value="Standard" {% if form_data.get('Subscription_Type', '') == 'Standard' %}selected{% endif %}>Standard</option>
+                <option value="Premium" {% if form_data.get('Subscription_Type', '') == 'Premium' %}selected{% endif %}>Premium</option>
+            </select>
+            <label>Contract Length:</label>
+            <select name="Contract_Length">
+                <option value="Monthly" {% if form_data.get('Contract_Length', '') == 'Monthly' %}selected{% endif %}>Monthly</option>
+                <option value="Quarterly" {% if form_data.get('Contract_Length', '') == 'Quarterly' %}selected{% endif %}>Quarterly</option>
+                <option value="Annual" {% if form_data.get('Contract_Length', '') == 'Annual' %}selected{% endif %}>Annual</option>
+            </select>
+            <label>Total Spend:</label>
+            <input type="number" step="0.01" name="Total_Spend" required value="{{ form_data.get('Total_Spend', '') }}">
+            <label>Last Interaction:</label>
+            <input type="number" name="Last_Interaction" required value="{{ form_data.get('Last_Interaction', '') }}">
+            <div class="button-row">
+                <button type="submit">Predict Churn</button>
+                <button type="button" onclick="clearForm()">Clear details</button>
+            </div>
+        </form>
+        {% if prediction %}
+            <div class="result">Prediction: {{ prediction }}</div>
+        {% endif %}
+    </div>
+    <script>
+        function clearForm() {
+            const form = document.getElementById('churnForm');
+            form.reset();
+            // Remove all values from input fields (for browsers that keep values after reset)
+            Array.from(form.elements).forEach(el => {
+                if (el.tagName === "INPUT" || el.tagName === "SELECT") {
+                    el.value = '';
+                    el.disabled = false;
+                }
+            });
+            // Remove prediction result if present
+            const resultDiv = document.querySelector('.result');
+            if (resultDiv) resultDiv.remove();
+        }
+    </script>
+</body>
+</html>

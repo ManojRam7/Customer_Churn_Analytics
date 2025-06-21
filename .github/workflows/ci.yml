@@ -28,71 +28,32 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        PYTHONPATH=. pytest --cov=src --cov=app --cov-report=term tests/
+        PYTHONPATH=. pytest --cov=src --cov=app --cov-report=term
 
-    - name: Build Docker image
-      run: docker build -t customer-churn-api:${{ github.sha }} .
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
-    - name: Log in to Azure Container Registry
-      uses: azure/docker-login@v2
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
       with:
-        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Tag Docker image
-      run: docker tag customer-churn-api:${{ github.sha }} ${{ secrets.ACR_LOGIN_SERVER }}/customer-churn-api:${{ github.sha }}
-
-    - name: Push Docker image
-      run: docker push ${{ secrets.ACR_LOGIN_SERVER }}/customer-churn-api:${{ github.sha }}
-
-    - name: Deploy to Azure Web App
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-        images: ${{ secrets.ACR_LOGIN_SERVER }}/customer-churn-api:${{ github.sha }}
-        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-
-
-
-
-
-
-
-
-
-"""
-
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-
-    - name: Install dependencies
+    - name: Build and push Docker image (amd64)
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        docker buildx build --platform linux/amd64 \
+          -t manojram7/customer-churn-api:${{ github.sha }} \
+          --push .
 
-    - name: Install coverage
-      run: pip install pytest-cov
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Run tests with coverage
+    - name: Deploy to Azure Container App
       run: |
-        PYTHONPATH=. pytest --cov=src --cov=app --cov-report=term tests
-
-        """
+        az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        az containerapp update \
+          --name ${{ secrets.AZURE_CONTAINERAPP_NAME }} \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --image manojram7/customer-churn-api:${{ github.sha }}

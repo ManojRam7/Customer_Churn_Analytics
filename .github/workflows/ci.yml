@@ -26,6 +26,14 @@ jobs:
     - name: Install coverage
       run: pip install pytest-cov
 
+
+    - name: Download model files
+      run: |
+        mkdir -p models
+        wget <CustomerChurn_Prediction/models> -O models/preprocessor.pkl
+        wget <CustomerChurn_Prediction/models> -O models/random_forest_churn_from_script.pkl
+        wget <CustomerChurn_Prediction/models> -O models/model_columns.pkl
+
     - name: Run tests with coverage
       run: |
         PYTHONPATH=. pytest --cov=src --cov=app --cov-report=term

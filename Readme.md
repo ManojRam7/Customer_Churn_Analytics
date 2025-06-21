@@ -1,4 +1,7 @@
-# Customer Churn Prediction Website
+# 📊 Customer Churn Prediction Platform
+
+[![CI/CD](https://github.com/ManojRam7/CustomerChurn_Prediction/actions/workflows/ci.yml/badge.svg)](https://github.com/ManojRam7/CustomerChurn_Prediction/actions)
+[![Docker Pulls](https://img.shields.io/docker/pulls/manojram7/customer-churn-api)](https://hub.docker.com/r/manojram7/customer-churn-api)
 
 A robust, production-ready machine learning web service for telecom customer churn prediction.  
 Built with **FastAPI**, **Docker**, and **Azure Container Apps**.  
@@ -8,15 +11,37 @@ Automated CI/CD with **GitHub Actions** and **Docker Hub**.
 
 ## 🚀 Features
 
-- **Data Analysis**:data cleaning, preprocessing, model training, and inference testing
-- **Machine Learning Model**: Powered by a trained Random Forest model.
-- **FASTAPI BACK-END-POINT**: Batch and single-customer predictions via FastAPI API.
-- **POSTMAN**: Batch and single-customer predictions via `/predict` endpoint.
-- **FRONT-END-POINT WEB UI**: Responsive, user-friendly HTML form with live predictions.
-- **Automated CI/CD**: Every push is tested, containerized to Docker Hub, and deployed to Azure Conatiner APP.
-- **DOCKER IMAGE**: Docker image generated and extracted to Docker Desktop and Pushed to Docker HUb.
-- **AZURE Cloud**: Runs on scalable, Health and model info endpoints,secure Azure Container Apps.
+- **Accurate Churn Prediction**: Powered by a trained Random Forest model.
+- **Modern Web UI**: Responsive, user-friendly HTML form with live predictions.
+- **REST API**: Batch and single-customer predictions via `/predict` endpoint.
+- **Automated CI/CD**: Every push is tested, containerized, and deployed to Azure.
+- **Cloud-Native**: Runs on scalable, secure Azure Container Apps.
 - **Secrets Management**: All credentials handled securely via GitHub Secrets.
+- **Production-Ready**: Modular, maintainable, and easy to extend.
+
+---
+
+## 🏗️ Architecture
+
+```
+User (Web/API)
+   │
+   ▼
+Azure Container App (FastAPI + ML Model)
+   │
+   ▼
+Docker Hub (Image Registry)
+   │
+   ▼
+GitHub Actions (CI/CD)
+```
+
+---
+
+## 📸 Screenshot
+
+<!-- Replace with an actual screenshot if available -->
+![Web UI Screenshot](docs/screenshot.png)
 
 ---
 
@@ -24,94 +49,161 @@ Automated CI/CD with **GitHub Actions** and **Docker Hub**.
 
 ```
 CustomerChurn_Prediction/
-│
 ├── app.py                  # FastAPI app (API + HTML frontend)
 ├── requirements.txt        # Python dependencies
 ├── Dockerfile              # Docker build instructions
-├── models/
-│   ├── preprocessor.pkl    # Saved preprocessor
-│   ├── random_forest_churn_from_script.pkl  # Trained model
-│   └── model_columns.pkl   # Model feature columns
+├── models/                 # ML model, preprocessor, columns
+│   ├── preprocessor.pkl
+│   ├── random_forest_churn_from_script.pkl
+│   └── model_columns.pkl
 ├── templates/
-│   └── index.html          # Jinja2 HTML template for the web form
-├── src/                    # (Optional) Scripts for training, preprocessing, testing
+│   └── index.html          # Jinja2 HTML template
+├── src/                    # (Optional) Data prep, training scripts
 │   ├── preprocessing.py
 │   ├── train_model.py
 │   └── test.py
-├── data/                   # (Optional) Data files
-│   └── processed/
-│       ├── eda_cleaned.csv
-│       └── preprocessed_from_script.csv
-└── README.md
+├── tests/                  # Unit and API tests
+│   └── test_api.py
+└── .github/workflows/ci.yml # GitHub Actions workflow
 ```
 
 ---
 
-## ⚙️ Setup
+## ⚡ Quickstart
 
-1. **Clone the repo and install dependencies:**
-    ```bash
-    git clone <your-repo-url>
-    cd CustomerChurn_Prediction
-    python -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    ```
+### 1. **Clone & Install**
+```bash
+git clone https://github.com/ManojRam7/CustomerChurn_Prediction.git
+cd CustomerChurn_Prediction
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-2. **Preprocess data and train the model (if needed):**
-    ```bash
-    python src/preprocessing.py
-    python src/train_model.py
-    ```
+### 2. **Run Locally**
+```bash
+uvicorn app:app --reload --port 8080
+```
+- Visit [http://localhost:8080](http://localhost:8080) for the web UI.
+- Use `/predict` for API requests.
 
-3. **Run tests (optional):**
-    ```bash
-    python src/test.py
-    ```
-
-4. **Start the FastAPI server (with HTML frontend):**
-    ```bash
-    uvicorn app:app --reload --port 8080
-    ```
-    - Visit [http://localhost:8080](http://localhost:8080) for the web form.
-    - Use `/predict` endpoint for API predictions.
+### 3. **Run Tests**
+```bash
+pytest --cov=src --cov=app --cov-report=term
+```
 
 ---
 
-## 🛠️ Usage
+## 🐳 Docker
 
-### **A. Web Frontend**
-
-- Open [http://localhost:8080](http://localhost:8080) in your browser.
-- Fill in the form and click **Predict Churn** to see results.
-- Use the **Clear** button to reset the form.
-
-### **B. API Endpoints**
-
-#### **1. Health Check**
-```http
-GET /health
-```
-**Response:**  
-```json
-{"status": "ok"}
+### **Build & Run Locally**
+```bash
+docker build --platform linux/amd64 -t manojram7/customer-churn-api:latest .
+docker run -p 8080:8080 manojram7/customer-churn-api:latest
 ```
 
-#### **2. Model Info**
-```http
-GET /model_info
-```
-**Response:**  
-```json
-{"model": "RandomForest", "version": "1.0"}
-```
+---
 
-#### **3. Predict Churn**
-```http
-POST /predict
-Content-Type: application/json
+## ☁️ Azure Deployment
+
+1. **Push Docker image to Docker Hub:**
+    ```bash
+    docker push manojram7/customer-churn-api:latest
+    ```
+2. **Deploy via Azure Portal or CLI:**
+    - Use image: `manojram7/customer-churn-api:latest`
+    - Set target port: `8080`
+    - Enable ingress for public access
+
+---
+
+## 🔄 CI/CD Integration
+
+This project uses **GitHub Actions** for end-to-end automation:
+
+- **On every push or PR to `main`:**
+  - Checks out code
+  - Installs dependencies
+  - Runs all tests with coverage
+  - Builds and pushes Docker image to Docker Hub
+  - Deploys the new image to Azure Container Apps
+
+### **Workflow Highlights**
+- **Secrets**: All credentials (Docker Hub, Azure) are stored securely in GitHub Secrets.
+- **Traceability**: Docker images are tagged with commit SHA.
+- **Zero-downtime**: Azure Container App is updated automatically.
+
+<details>
+<summary>Click to view CI/CD workflow YAML</summary>
+
+```yaml
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Install coverage
+      run: pip install pytest-cov
+
+    - name: Run tests with coverage
+      run: |
+        PYTHONPATH=. pytest --cov=src --cov=app --cov-report=term
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push Docker image (amd64)
+      run: |
+        docker buildx build --platform linux/amd64 \
+          -t manojram7/customer-churn-api:${{ github.sha }} \
+          --push .
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Deploy to Azure Container App
+      run: |
+        az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        az containerapp update \
+          --name ${{ secrets.AZURE_CONTAINERAPP_NAME }} \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --image manojram7/customer-churn-api:${{ github.sha }}
 ```
-**Request Body Example:**
+</details>
+
+---
+
+## 🧪 API Example (Postman)
+
+**POST** `/predict`
 ```json
 {
   "data": [
@@ -124,78 +216,45 @@ Content-Type: application/json
       "Support_Calls": 2,
       "Payment_Delay": 0,
       "Subscription_Type": "Standard",
-      "Contract_Length": "Annual",
-      "Total_Spend": 1200,
+      "Contract_Length": "Quarterly",
+      "Total_Spend": 1200.50,
       "Last_Interaction": 5
     }
   ]
 }
 ```
-**Response Example:**
-```json
-{
-  "predictions": [0]
-}
-```
-
-#### **4. Reload Model**
-```http
-POST /reload_model
-```
-**Response:**  
-```json
-{"status": "model reloaded"}
-```
 
 ---
 
-## 📝 Notes
+## 🔒 Security & Best Practices
 
-- Ensure your input data matches the expected column names and types.
-- For batch predictions, send multiple objects in the `"data"` array.
-- Update model and preprocessor files together after retraining.
-- The HTML form retains values after prediction and features a clear button and watermark.
-
----
-
-## 🐳 Dockerization
-
-1. **Build the Docker image for amd64 (required for Azure):**
-    ```bash
-    docker build --platform linux/amd64 -t manojram7/customer-churn-api:latest .
-    ```
-
-2. **Run locally:**
-    ```bash
-    docker run -p 8080:8080 manojram7/customer-churn-api:latest
-    ```
-
-3. **Push to Docker Hub:**
-    ```bash
-    docker push manojram7/customer-churn-api:latest
-    ```
+- All secrets are managed via GitHub Actions secrets.
+- Docker images are built for `linux/amd64` for maximum compatibility.
+- Model files are versioned and included in the repo for reproducibility.
+- Automated tests ensure reliability before every deployment.
 
 ---
 
-## ☁️ Azure Container App Deployment
+## 📈 Roadmap & Enhancements
 
-1. **Create a Container App in Azure Portal:**
-    - **Image source:** Docker Hub
-    - **Registry login server:** `docker.io`
-    - **Image and tag:** `manojram7/customer-churn-api:latest`
-    - **Target port:** `8080`
-    - **Ingress:** Enabled (public access if needed)
-
-2. **After deployment, access your app at the provided Azure URL.**
-
-3. **Test the `/` (web form) and `/predict` (API) endpoints.**
+- [ ] Add authentication for API endpoints
+- [ ] Integrate monitoring/logging (Azure Monitor, App Insights)
+- [ ] Add blue/green deployment support
+- [ ] Expand test coverage
 
 ---
 
-## 📧 Support
+## 🙌 Contributing
 
-For questions or issues, open an issue or contact the maintainer.
+Pull requests and issues are welcome!  
+For major changes, please open an issue first to discuss what you would like to change.
 
 ---
 
-**Happy Predicting!**
+## 📄 License
+
+MIT License
+
+---
+
+**Happy Predicting! 🚀**

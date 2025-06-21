@@ -1,19 +1,22 @@
 # Customer Churn Prediction Website
 
-A production-ready machine learning pipeline and FastAPI web service for predicting customer churn.  
-Supports batch and single-customer predictions via API and a user-friendly HTML web form.  
-Easily deployable with Docker and Azure Container Apps.
+A robust, production-ready machine learning web service for telecom customer churn prediction.  
+Built with **FastAPI**, **Docker**, and **Azure Container Apps**.  
+Automated CI/CD with **GitHub Actions** and **Docker Hub**.
 
 ---
 
 ## 🚀 Features
 
-- End-to-end pipeline: data cleaning, preprocessing, model training, and inference
-- Batch and single-customer predictions via FastAPI API
-- Modern HTML front-end for manual predictions
-- Health and model info endpoints
-- Robust error handling
-- Easily deployable (Docker/Azure)
+- **Data Analysis**:data cleaning, preprocessing, model training, and inference testing
+- **Machine Learning Model**: Powered by a trained Random Forest model.
+- **FASTAPI BACK-END-POINT**: Batch and single-customer predictions via FastAPI API.
+- **POSTMAN**: Batch and single-customer predictions via `/predict` endpoint.
+- **FRONT-END-POINT WEB UI**: Responsive, user-friendly HTML form with live predictions.
+- **Automated CI/CD**: Every push is tested, containerized to Docker Hub, and deployed to Azure Conatiner APP.
+- **DOCKER IMAGE**: Docker image generated and extracted to Docker Desktop and Pushed to Docker HUb.
+- **AZURE Cloud**: Runs on scalable, Health and model info endpoints,secure Azure Container Apps.
+- **Secrets Management**: All credentials handled securely via GitHub Secrets.
 
 ---
 
@@ -121,8 +124,8 @@ Content-Type: application/json
       "Support_Calls": 2,
       "Payment_Delay": 0,
       "Subscription_Type": "Standard",
-      "Contract_Length": "12m",
-      "Total_Spend": 1200.50,
+      "Contract_Length": "Annual",
+      "Total_Spend": 1200,
       "Last_Interaction": 5
     }
   ]

@@ -3,3 +3,12 @@ __pycache__/
 *.ipynb_checkpoints
 .env
 venv/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
+*.tmp
+models/*.bak
+reports/training_metrics.json

@@ -1,69 +1,142 @@
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+from pathlib import Path
+
 import joblib
+import numpy as np
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
+
+BASE_DIR = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE_DIR / "data"
+MODELS_DIR = BASE_DIR / "models"
+
+TARGET_COLUMN = "Churn"
+
+FEATURE_NAME_MAP = {
+    "Usage Frequency": "Usage_Frequency",
+    "Support Calls": "Support_Calls",
+    "Payment Delay": "Payment_Delay",
+    "Subscription Type": "Subscription_Type",
+    "Contract Length": "Contract_Length",
+    "Total Spend": "Total_Spend",
+    "Last Interaction": "Last_Interaction",
+}
 
 
 class Preprocessor:
-    def __init__(self):
-        self.cat_cols = None
-        self.num_cols = None
-        self.label_encoders = {}
-        self.scaler = None
+    """Legacy preprocessor kept for backward compatibility with existing pickles."""
 
-    def fit(self, df):
-        # Identify categorical and numerical columns
-        self.cat_cols = df.select_dtypes(include='object').columns.tolist()
-        self.num_cols = df.select_dtypes(include=np.number).columns.drop('Churn', errors='ignore').tolist()
+    def __init__(self) -> None:
+        self.cat_cols: list[str] | None = None
+        self.num_cols: list[str] | None = None
+        self.label_encoders: dict[str, LabelEncoder] = {}
+        self.scaler: StandardScaler | None = None
 
-        # Fit label encoders for categorical columns
-        for col in self.cat_cols:
-            le = LabelEncoder()
-            df[col] = df[col].astype(str)
-            le.fit(df[col])
-            self.label_encoders[col] = le
+    def fit(self, df: pd.DataFrame) -> None:
+        self.cat_cols = df.select_dtypes(include="object").columns.tolist()
+        self.num_cols = (
+            df.select_dtypes(include=np.number)
+            .columns.drop(TARGET_COLUMN, errors="ignore")
+            .tolist()
+        )
 
-        # Fit scaler for numerical columns
+        for column in self.cat_cols:
+            encoder = LabelEncoder()
+            series = df[column].astype(str)
+            encoder.fit(series)
+            self.label_encoders[column] = encoder
+
         self.scaler = StandardScaler()
         self.scaler.fit(df[self.num_cols])
 
-    def transform(self, df):
-        df = df.copy()
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        if self.cat_cols is None or self.num_cols is None or self.scaler is None:
+            raise ValueError("Preprocessor is not fitted")
 
-        # Encode categorical columns
-        for col in self.cat_cols:
-            le = self.label_encoders.get(col)
-            if le:
-                df[col] = df[col].astype(str)
-                # Handle unseen labels
-                df[col] = df[col].map(lambda s: s if s in le.classes_ else 'unknown')
-                if 'unknown' not in le.classes_:
-                    le.classes_ = np.append(le.classes_, 'unknown')
-                df[col] = le.transform(df[col])
-            else:
-                df[col] = 0  # or np.nan
+        frame = df.copy()
 
-        # Scale numerical columns
-        df[self.num_cols] = self.scaler.transform(df[self.num_cols])
+        for column in self.cat_cols:
+            encoder = self.label_encoders.get(column)
+            if encoder is None:
+                frame[column] = 0
+                continue
 
-        return df
+            frame[column] = frame[column].astype(str)
+            frame[column] = frame[column].map(
+                lambda value: value if value in encoder.classes_ else "unknown"
+            )
+            if "unknown" not in encoder.classes_:
+                encoder.classes_ = np.append(encoder.classes_, "unknown")
+            frame[column] = encoder.transform(frame[column])
 
-    def fit_transform(self, df):
+        frame[self.num_cols] = self.scaler.transform(frame[self.num_cols])
+        return frame
+
+    def fit_transform(self, df: pd.DataFrame) -> pd.DataFrame:
         self.fit(df)
         return self.transform(df)
 
 
-# Example usage for training:
-if __name__ == "__main__":
-    # Use EDA-cleaned data for fitting the preprocessor
-    df = pd.read_csv('data/processed/eda_cleaned.csv')
-    preprocessor = Preprocessor()
-    df_processed = preprocessor.fit_transform(df)
+def normalize_feature_names(frame: pd.DataFrame) -> pd.DataFrame:
+    return frame.rename(columns=FEATURE_NAME_MAP)
 
-    # Save the preprocessor for later use (for inference/deployment)
-    joblib.dump(preprocessor, 'models/preprocessor.pkl')
 
-    # Optionally, save the processed data
-    df_processed.to_csv(
-        'data/processed/preprocessed_from_script.csv', index=False
+def load_training_data(path: Path | None = None) -> pd.DataFrame:
+    source_path = path or (DATA_DIR / "raw" / "train.csv")
+    data = pd.read_csv(source_path)
+    data = normalize_feature_names(data)
+    return data
+
+
+def split_features_target(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
+    x = frame.drop(columns=[TARGET_COLUMN])
+    y = frame[TARGET_COLUMN].astype(int)
+    return x, y
+
+
+def build_preprocessor(features: pd.DataFrame) -> ColumnTransformer:
+    categorical_cols = features.select_dtypes(include=["object"]).columns.tolist()
+    numeric_cols = [c for c in features.columns if c not in categorical_cols]
+
+    categorical_transformer = Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="most_frequent")),
+            (
+                "encoder",
+                OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+            ),
+        ]
     )
+
+    numeric_transformer = Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+        ]
+    )
+
+    return ColumnTransformer(
+        transformers=[
+            ("cat", categorical_transformer, categorical_cols),
+            ("num", numeric_transformer, numeric_cols),
+        ],
+        remainder="drop",
+        verbose_feature_names_out=False,
+    )
+
+
+def fit_and_save_preprocessor() -> None:
+    frame = load_training_data()
+    x_train, _ = split_features_target(frame)
+    preprocessor = build_preprocessor(x_train)
+    preprocessor.fit(x_train)
+
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    joblib.dump(preprocessor, MODELS_DIR / "preprocessor.pkl")
+
+
+if __name__ == "__main__":
+    fit_and_save_preprocessor()
+    print("Preprocessor fitted and saved to models/preprocessor.pkl")

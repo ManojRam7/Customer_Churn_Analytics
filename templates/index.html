@@ -1,179 +1,300 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Customer Churn Prediction</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Churn Intelligence Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-1: #f5f1e8;
+            --bg-2: #d9ede8;
+            --ink: #1a2b2d;
+            --muted: #496266;
+            --card: rgba(255, 255, 255, 0.88);
+            --stroke: rgba(26, 43, 45, 0.15);
+            --accent: #0f8b8d;
+            --accent-2: #f29e4c;
+            --shadow: 0 20px 50px rgba(26, 43, 45, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
-            padding: 0;
             min-height: 100vh;
-            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 50%, #fffcb0 100%);
-            position: relative;
+            color: var(--ink);
+            font-family: "DM Sans", sans-serif;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(242, 158, 76, 0.25), transparent 35%),
+                radial-gradient(circle at 90% 10%, rgba(15, 139, 141, 0.22), transparent 30%),
+                linear-gradient(135deg, var(--bg-1), var(--bg-2));
+            overflow-x: hidden;
         }
-        .watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-20deg);
-            font-size: 10vw;
-            color:rgb(248, 4, 4);
-            opacity: 0.25;
-            font-weight: bold;
-            pointer-events: none;
-            user-select: none;
-            z-index: 0;
-            white-space: nowrap;
+
+        .page-shell {
+            width: min(1080px, 95vw);
+            margin: 40px auto;
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 24px;
+            align-items: start;
+            animation: reveal 0.8s ease both;
         }
-        .container {
-            max-width: 420px;
-            margin: 60px auto;
-            background: #fff;
-            padding: 36px 32px 28px 32px;
-            border-radius: 18px;
-            box-shadow: 0 8px 32px rgba(60,60,120,0.12);
+
+        .hero,
+        .form-card {
+            border: 1px solid var(--stroke);
+            background: var(--card);
+            backdrop-filter: blur(8px);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero {
+            padding: 28px;
+            position: sticky;
+            top: 18px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 0.8rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            line-height: 1.1;
+        }
+
+        .hero p {
+            color: var(--muted);
+            margin-top: 14px;
+            line-height: 1.55;
+        }
+
+        .stats {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat {
+            border-radius: 14px;
+            padding: 12px;
+            border: 1px solid var(--stroke);
+            background: rgba(255, 255, 255, 0.75);
+        }
+
+        .stat strong {
+            display: block;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .form-card {
+            padding: 28px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .field {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            position: relative;
-            z-index: 1;
+            gap: 6px;
+            animation: rise 0.5s ease both;
         }
-        h2 {
-            margin-bottom: 24px;
-            color: #2d3a4b;
-            letter-spacing: 1px;
-        }
-        form {
-            width: 100%;
-        }
+
+        .field:nth-child(odd) { animation-delay: 0.05s; }
+        .field:nth-child(even) { animation-delay: 0.1s; }
+
         label {
-            display: block;
-            margin-bottom: 6px;
-            color: #3b4252;
+            font-size: 0.85rem;
+            color: var(--muted);
             font-weight: 500;
         }
-        input, select {
+
+        input,
+        select {
             width: 100%;
-            margin-bottom: 18px;
-            padding: 10px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 1rem;
-            background: #f8fafc;
-            transition: border 0.2s;
+            border-radius: 12px;
+            border: 1px solid var(--stroke);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 11px 12px;
+            color: var(--ink);
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, transform 0.2s ease;
         }
-        input:focus, select:focus {
-            border: 1.5px solid #6366f1;
+
+        input:focus,
+        select:focus {
             outline: none;
-            background: #fff;
+            border-color: var(--accent);
+            transform: translateY(-1px);
         }
-        .button-row {
+
+        .actions {
+            margin-top: 18px;
             display: flex;
             gap: 10px;
         }
+
         button {
-            flex: 1;
-            padding: 12px 0;
-            background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border: 0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-family: "Space Grotesk", sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(99,102,241,0.08);
-            transition: background 0.2s, transform 0.1s;
+            transition: transform 0.2s ease, filter 0.2s ease;
         }
+
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, var(--accent), #145f62);
+            color: #fff;
+        }
+
+        .btn-ghost {
+            background: #fff;
+            border: 1px solid var(--stroke);
+            color: var(--ink);
+        }
+
         button:hover {
-            background: linear-gradient(90deg, #60a5fa 0%, #6366f1 100%);
-            transform: translateY(-2px) scale(1.02);
+            transform: translateY(-2px);
+            filter: brightness(1.03);
         }
+
         .result {
-            margin-top: 28px;
-            padding: 16px;
-            background: #f1f5f9;
-            border-left: 5px solid #6366f1;
-            border-radius: 6px;
-            font-size: 1.15rem;
-            color: #22223b;
-            text-align: center;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(99,102,241,0.06);
+            margin-top: 18px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(15, 139, 141, 0.3);
+            background: rgba(15, 139, 141, 0.08);
+            animation: reveal 0.4s ease both;
         }
-        @media (max-width: 600px) {
-            .container {
-                max-width: 98vw;
-                padding: 18px 6vw 18px 6vw;
+
+        .result strong {
+            font-family: "Space Grotesk", sans-serif;
+        }
+
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 980px) {
+            .page-shell {
+                grid-template-columns: 1fr;
             }
-            .watermark {
-                font-size: 12vw;
+
+            .hero {
+                position: static;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
-    <div class="watermark">TELECOM SERVICES</div>
-    <div class="container">
-        <h2>Customer Churn Prediction</h2>
-        <form method="post" id="churnForm" autocomplete="off">
-            <label>CustomerID:</label>
-            <input type="number" name="CustomerID" required value="{{ form_data.get('CustomerID', '') }}">
-            <label>Age:</label>
-            <input type="number" name="Age" required value="{{ form_data.get('Age', '') }}">
-            <label>Gender:</label>
-            <select name="Gender">
-                <option value="Male" {% if form_data.get('Gender', '') == 'Male' %}selected{% endif %}>Male</option>
-                <option value="Female" {% if form_data.get('Gender', '') == 'Female' %}selected{% endif %}>Female</option>
-            </select>
-            <label>Tenure:</label>
-            <input type="number" name="Tenure" required value="{{ form_data.get('Tenure', '') }}">
-            <label>Usage Frequency:</label>
-            <input type="number" name="Usage_Frequency" required value="{{ form_data.get('Usage_Frequency', '') }}">
-            <label>Support Calls:</label>
-            <input type="number" name="Support_Calls" required value="{{ form_data.get('Support_Calls', '') }}">
-            <label>Payment Delay:</label>
-            <input type="number" name="Payment_Delay" required value="{{ form_data.get('Payment_Delay', '') }}">
-            <label>Subscription Type:</label>
-            <select name="Subscription_Type">
-                <option value="Basic" {% if form_data.get('Subscription_Type', '') == 'Basic' %}selected{% endif %}>Basic</option>
-                <option value="Standard" {% if form_data.get('Subscription_Type', '') == 'Standard' %}selected{% endif %}>Standard</option>
-                <option value="Premium" {% if form_data.get('Subscription_Type', '') == 'Premium' %}selected{% endif %}>Premium</option>
-            </select>
-            <label>Contract Length:</label>
-            <select name="Contract_Length">
-                <option value="Monthly" {% if form_data.get('Contract_Length', '') == 'Monthly' %}selected{% endif %}>Monthly</option>
-                <option value="Quarterly" {% if form_data.get('Contract_Length', '') == 'Quarterly' %}selected{% endif %}>Quarterly</option>
-                <option value="Annual" {% if form_data.get('Contract_Length', '') == 'Annual' %}selected{% endif %}>Annual</option>
-            </select>
-            <label>Total Spend:</label>
-            <input type="number" step="0.01" name="Total_Spend" required value="{{ form_data.get('Total_Spend', '') }}">
-            <label>Last Interaction:</label>
-            <input type="number" name="Last_Interaction" required value="{{ form_data.get('Last_Interaction', '') }}">
-            <div class="button-row">
-                <button type="submit">Predict Churn</button>
-                <button type="button" onclick="clearForm()">Clear details</button>
+    <main class="page-shell">
+        <section class="hero">
+            <span class="eyebrow">Portfolio-Grade Inference</span>
+            <h1>Churn Intelligence Studio</h1>
+            <p>Run real-time churn risk scoring with a production FastAPI service and an explainable, validated input workflow.</p>
+            <div class="stats">
+                <article class="stat">
+                    <strong>Random Forest</strong>
+                    <span>Balanced training setup</span>
+                </article>
+                <article class="stat">
+                    <strong>Batch API</strong>
+                    <span>/predict endpoint ready</span>
+                </article>
+                <article class="stat">
+                    <strong>Typed Validation</strong>
+                    <span>Pydantic contract checks</span>
+                </article>
+                <article class="stat">
+                    <strong>Docker Ready</strong>
+                    <span>Portable runtime image</span>
+                </article>
             </div>
-        </form>
-        {% if prediction %}
-            <div class="result">Prediction: {{ prediction }}</div>
-        {% endif %}
-    </div>
+        </section>
+
+        <section class="form-card">
+            <form method="post" id="churnForm" autocomplete="off">
+                <div class="form-grid">
+                    <div class="field"><label for="CustomerID">Customer ID</label><input id="CustomerID" type="number" name="CustomerID" required value="{{ form_data.get('CustomerID', '') }}"></div>
+                    <div class="field"><label for="Age">Age</label><input id="Age" type="number" name="Age" min="18" max="100" required value="{{ form_data.get('Age', '') }}"></div>
+                    <div class="field"><label for="Gender">Gender</label><select id="Gender" name="Gender"><option value="Male" {% if form_data.get('Gender', '') == 'Male' %}selected{% endif %}>Male</option><option value="Female" {% if form_data.get('Gender', '') == 'Female' %}selected{% endif %}>Female</option></select></div>
+                    <div class="field"><label for="Tenure">Tenure (months)</label><input id="Tenure" type="number" name="Tenure" min="0" required value="{{ form_data.get('Tenure', '') }}"></div>
+                    <div class="field"><label for="Usage_Frequency">Usage Frequency</label><input id="Usage_Frequency" type="number" name="Usage_Frequency" min="0" required value="{{ form_data.get('Usage_Frequency', '') }}"></div>
+                    <div class="field"><label for="Support_Calls">Support Calls</label><input id="Support_Calls" type="number" name="Support_Calls" min="0" required value="{{ form_data.get('Support_Calls', '') }}"></div>
+                    <div class="field"><label for="Payment_Delay">Payment Delay</label><input id="Payment_Delay" type="number" name="Payment_Delay" min="0" required value="{{ form_data.get('Payment_Delay', '') }}"></div>
+                    <div class="field"><label for="Subscription_Type">Subscription Type</label><select id="Subscription_Type" name="Subscription_Type"><option value="Basic" {% if form_data.get('Subscription_Type', '') == 'Basic' %}selected{% endif %}>Basic</option><option value="Standard" {% if form_data.get('Subscription_Type', '') == 'Standard' %}selected{% endif %}>Standard</option><option value="Premium" {% if form_data.get('Subscription_Type', '') == 'Premium' %}selected{% endif %}>Premium</option></select></div>
+                    <div class="field"><label for="Contract_Length">Contract Length</label><select id="Contract_Length" name="Contract_Length"><option value="Monthly" {% if form_data.get('Contract_Length', '') == 'Monthly' %}selected{% endif %}>Monthly</option><option value="Quarterly" {% if form_data.get('Contract_Length', '') == 'Quarterly' %}selected{% endif %}>Quarterly</option><option value="Annual" {% if form_data.get('Contract_Length', '') == 'Annual' %}selected{% endif %}>Annual</option></select></div>
+                    <div class="field"><label for="Total_Spend">Total Spend</label><input id="Total_Spend" type="number" step="0.01" name="Total_Spend" min="0" required value="{{ form_data.get('Total_Spend', '') }}"></div>
+                    <div class="field"><label for="Last_Interaction">Last Interaction</label><input id="Last_Interaction" type="number" name="Last_Interaction" min="0" required value="{{ form_data.get('Last_Interaction', '') }}"></div>
+                </div>
+                <div class="actions">
+                    <button class="btn-primary" type="submit">Predict Churn Risk</button>
+                    <button class="btn-ghost" type="button" onclick="clearForm()">Reset Inputs</button>
+                </div>
+            </form>
+
+            {% if prediction %}
+            <div class="result">
+                <strong>Prediction:</strong> {{ prediction }}
+                {% if probability is not none %}
+                <div>Churn probability: {{ '%.2f'|format(probability * 100) }}%</div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
     <script>
         function clearForm() {
-            const form = document.getElementById('churnForm');
-            form.reset();
-            // Remove all values from input fields (for browsers that keep values after reset)
-            Array.from(form.elements).forEach(el => {
-                if (el.tagName === "INPUT" || el.tagName === "SELECT") {
-                    el.value = '';
-                    el.disabled = false;
-                }
-            });
-            // Remove prediction result if present
-            const resultDiv = document.querySelector('.result');
-            if (resultDiv) resultDiv.remove();
+            document.getElementById("churnForm").reset();
+            const result = document.querySelector(".result");
+            if (result) {
+                result.remove();
+            }
         }
     </script>
 </body>

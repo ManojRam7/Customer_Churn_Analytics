@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI
 
 on:
   push:
@@ -7,55 +7,28 @@ on:
     branches: [main]
 
 jobs:
-  build-test-deploy:
+  test-and-build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Install coverage
-      run: pip install pytest-cov
+      - name: Lint
+        run: ruff check app.py src tests
 
+      - name: Run tests with coverage
+        run: pytest --cov=app --cov=src --cov-report=term-missing
 
-
-    - name: Run tests with coverage
-      run: |
-        PYTHONPATH=. pytest --cov=src --cov=app --cov-report=term
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Build and push Docker image (amd64)
-      run: |
-        docker buildx build --platform linux/amd64 \
-          -t manojram7/customer-churn-api:${{ github.sha }} \
-          --push .
-
-    - name: Azure Login
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Deploy to Azure Container App
-      run: |
-        az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        az containerapp update \
-          --name ${{ secrets.AZURE_CONTAINERAPP_NAME }} \
-          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-          --image manojram7/customer-churn-api:${{ github.sha }}
+      - name: Build Docker image
+        run: docker build -t customer-churn-api:ci .

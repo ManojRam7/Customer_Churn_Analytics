@@ -1,4 +1,4 @@
-# Customer Churn Prediction
+# Customer Churn Analytics
 
 Predicts whether a telecom customer will churn from their profile and usage: age, tenure, usage
 frequency, support calls, payment delay, subscription type, contract length, total spend and days

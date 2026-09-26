@@ -31,7 +31,7 @@ EXTERNAL_TO_INTERNAL = {
 FORM_FIELD_ORDER = list(EXTERNAL_TO_INTERNAL.keys())
 
 app = FastAPI(
-    title="Customer Churn Prediction API",
+    title="Customer Churn Analytics API",
     description="Inference API and web form for telecom churn prediction.",
     version="2.0.0",
 )

@@ -12,3 +12,7 @@ htmlcov/
 *.tmp
 models/*.bak
 reports/training_metrics.json
+
+# OS / editor
+.DS_Store
+.vscode/
